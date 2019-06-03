@@ -193,7 +193,7 @@ def validate(dlobj, sess, predict_heatmaps, epoch, save_dir_val):
         # label = np.full((1,T,46,46,outclass),1.0)
 
             # get the prediction from the saved model
-        prediction = sess.run(predict_heatmaps,feed_dict={image:images,cmap:center,dropprob:1.0})
+        prediction = sess.run(predict_heatmaps,feed_dict={image:images,cmap:center})
 
         #no gradient calculation so no need to run trainer
         
