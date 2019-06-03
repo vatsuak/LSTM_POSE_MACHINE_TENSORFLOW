@@ -4,10 +4,10 @@ import tensorflow as tf
 
 class Net():
 
-    def __init__(self, outclass=21, T=7,prob=0.5):
+    def __init__(self, outclass=21, T=7):
         self.outclass = outclass
         self.T = T
-        self.prob = prob
+        # self.prob = prob
 
     def convnet1(self,img):
         '''

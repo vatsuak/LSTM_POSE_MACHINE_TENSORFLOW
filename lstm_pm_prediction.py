@@ -47,10 +47,10 @@ image = tf.placeholder(tf.float32,shape=[None,368,368,T*3],name='temporal_info')
 cmap = tf.placeholder(tf.float32,shape=[None,368,368,1],name='gaussian_peak')
 
 # placeholder for the dropout probability
-dropprob = tf.placeholder(tf.float32,name='dropout')
+# dropprob = tf.placeholder(tf.float32,name='dropout')
 
 #load the model
-net = model.Net(outclass=outclass,T=T,prob=dropprob)
+net = model.Net(outclass=outclass,T=T)
 
 # create the graph for the feed forwatd network
 predict_heatmaps = net.forward(image,cmap)
@@ -80,7 +80,7 @@ with tf.Session() as sess:
     # label = np.full((1,T,46,46,outclass),1.0)
 
         # get the prediction from the saved model
-        prediction = sess.run(predict_heatmaps,feed_dict={image:images,cmap:center,dropprob:1.0})
+        prediction = sess.run(predict_heatmaps,feed_dict={image:images,cmap:center})
 
     #no gradient calculation so no need to run trainer
     

@@ -18,7 +18,7 @@ T = 5
 outclass = 21
 learning_rate = 8e-6
 batch_size = 4                   # batch size* temporal must be atleast total number of images in the dataset otherwise the batches will be reported as the same images in a cyclic manner
-epochs = 100
+epochs = 101
 begin_epoch = 0
 save_dir = './ckpt/'                        # to save model
 data_dir = './001L0/'                        # the train data dir
@@ -58,10 +58,10 @@ label_map = tf.placeholder(tf.float32,shape=[None,T,45,45,outclass])
 cmap = tf.placeholder(tf.float32,shape=[None,368,368,1],name='gaussian_peak')
 
 # placeholder for the dropuout probability
-dropprob = tf.placeholder(tf.float32,name='dropout')
+# dropprob = tf.placeholder(tf.float32,name='dropout')
 
 # Build model
-net = model.Net(outclass=outclass,T=T,prob=dropprob)
+net = model.Net(outclass=outclass,T=T)
 
 
                             #****************BUILDING THE GRAPH*********************
@@ -136,7 +136,7 @@ def train():
                 images, label, center = dl_train()
                 # print(len(sess.run(predict_heatmaps,feed_dict={image:images,cmap:center,dropprob:1.0})))
             # ******************** calculate and save loss of each joints ********************
-                summary,_ = sess.run([merge, trainer],feed_dict={image:images,label_map:label,cmap:center,dropprob:1.0})
+                summary,_ = sess.run([merge, trainer],feed_dict={image:images,label_map:label,cmap:center})
                 # sess.run(trainer,feed_dict={image:images,label_map:label,cmap:center,dropprob:1.0})
                 
                 #for test
@@ -144,7 +144,7 @@ def train():
                 
                 if step % 10 == 0:
                     print('--step .....' + str(step+1))
-                    print('--loss ' + str(float(sess.run(total_loss,feed_dict={image:images,label_map:label,cmap:center,dropprob:1.0}))))
+                    print('--loss ' + str(float(sess.run(total_loss,feed_dict={image:images,label_map:label,cmap:center}))))
                 # print('--loss ' + str(float(sess.run(total_loss,feed_dict={image:im,label_map:lbl,cmap:cm}))))
 
                 #  ************************* validate and save model per 10 epochs  *************************
