@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 
 # hyper parameter
-T = 5
+T = 3
 outclass = 21
 learning_rate = 8e-6
 batch_size = 4                   # batch size* temporal must be atleast total number of images in the dataset otherwise the batches will be reported as the same images in a cyclic manner
