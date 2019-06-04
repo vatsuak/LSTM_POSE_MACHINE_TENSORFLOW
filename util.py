@@ -5,7 +5,7 @@ from sklearn.preprocessing import MinMaxScaler
 scaler_model = MinMaxScaler()
 import cv2
 
-
+# the predict heatmaps come in as a list of tensors the remaining are normal tensors, so converting the predictions also to be tensors completely 
 def calc_loss(predict_heatmaps, label_map, criterion, temporal=21):
     '''
     :param prediction(predict_heatmap(list of size (temporal+1)*[batch_size,46,46,21])), 
@@ -13,15 +13,20 @@ def calc_loss(predict_heatmaps, label_map, criterion, temporal=21):
     return:
     total_loss
     '''
+    # print(predict_heatmaps.get_shape())
+
     predict = predict_heatmaps[0]  # the initial prediction 
+
+    # print(label_map.get_shape())
+
     target = label_map[:, 0, :, :, :]
-    initial_loss = criterion(predict, target)  # loss initial
+    initial_loss = criterion(target,predict)  # loss initial
     total_loss = initial_loss
 
     for t in range(temporal):
         predict = predict_heatmaps[t+1]
         target = label_map[:, t, :, :, :]
-        tmp_loss = criterion(predict, target)  # loss in each stage
+        tmp_loss = criterion(target,predict)  # loss in each stage
         total_loss += tmp_loss
     return total_loss
 
@@ -113,7 +118,7 @@ def pred_images2(heatmaps,label_map,step,temporal=5, save_dir='./ckpt_tester2'):
         # _,pre = cv2.threshold(pre,thresh,1,cv2.THRESH_BINARY)
         # _,gth = cv2.threshold(pre,.1,1,cv2.THRESH_BINARY)        
         # output[0:45,  50 * t: 50 * t + 45] = cv2.blur(pre,(5,5))
-        output[0:45,  50 * t: 50 * t + 45] = pre
+        output[0:45,  50 * t: 50 * t + 45] = scaler_model.fit_transform(pre)
 
         output[50:95, 50 * t: 50 * t + 45] = gth
 

@@ -9,9 +9,9 @@ from DataLoader import *
 
 
 # hyper parameter
-T = 5           # must be the same as during training
+T = 3           # must be the same as during training
 outclass = 21    # must be the same as during trainin
-epoch = 40       # the epoch number of the model to load
+epoch = 99       # the epoch number of the model to load
 save_dir = './predictions/'
 data_dir = './001L0/'
 model_dir = './ckpt/'

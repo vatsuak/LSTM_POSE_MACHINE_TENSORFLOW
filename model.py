@@ -13,7 +13,7 @@ class Net():
         '''
         denoted by F0(.) in the paper 
         :param img:  368 * 368 * 21
-        :return: initial_heatmap  45(check) * 45 * out_class(21)
+        :return: initial_heatmap  45 * 45 * out_class(21)
         '''
         with tf.name_scope('conv1'):
             x = pool2d(tf.nn.relu(conv(img,3,128,9)))
@@ -168,7 +168,7 @@ class Net():
         with tf.name_scope('forward'):
             image = images[:, :, :, 0:3]
                 
-            heat_maps = []
+            heat_maps = []  # change to an empty tensor and add the value to that insted of a list change the loss calculation accordingly
             initial_heatmap, heatmap, cell, hide = self.stage1(image, cmap)  # initial heat map
 
             heat_maps.append(initial_heatmap)  # for initial loss
@@ -178,16 +178,16 @@ class Net():
                 image = images[:, :, :, (3 * i):(3 * i + 3)]
                 heatmap, cell, hide = self.stage2(image, cmap, heatmap, cell, hide)
                 heat_maps.append(heatmap)
-            
+            heat_maps = tf.stack(heat_maps)
+
             return heat_maps
 
 
 if __name__ == '__main__':
-    import tensorflow as tf
     import numpy as np
     image = (np.random.rand(1,368,368,15)).astype(np.float32)
     cmap = (np.random.rand(1,368,368,1)).astype(np.float32)
-    net = Net(21,5,1.0) 
+    net = Net(21,5) 
     maps = net.forward(image,cmap)
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
