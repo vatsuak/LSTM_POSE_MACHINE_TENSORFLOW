@@ -88,12 +88,14 @@ def pred_images(heatmaps,step,temporal, save_dir):
         pre = np.zeros((45, 45))  #
         for i in range(21):                             # for each joint
             pre += heatmaps[t][b, :, :, i]  # 2D
-        #_,pre = cv2.threshold(pre,0.5,1,cv2.THRESH_BINARY)
+        #
+        pre = scaler_model.fit_transform(pre)
+        _,pre = cv2.threshold(pre,0.8,1,cv2.THRESH_BINARY)
         output[0:45,  50 * t: 50 * t + 45] = pre
 
         if not os.path.exists(save_dir ):
             os.mkdir(save_dir )
-    #output = scaler_model.fit_transform(output)
+    
     scipy.misc.imsave(save_dir + '/' + str(step) + '.jpg', output[0:44])
 
 def pred_images2(heatmaps,label_map,step,temporal, save_dir):

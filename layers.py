@@ -12,7 +12,7 @@ def conv(input,num_input_channels,num_filters,filter_size,padding = 'SAME',bias=
         shape = [filter_size, filter_size, num_input_channels, num_filters]
 
         # Create new weights (filters) with the given shape
-        weights = tf.Variable(tf.truncated_normal(shape, stddev=0.05),name='w')
+        weights = tf.Variable(tf.random_normal(shape, stddev=0.1),name='w')
         
 
         # TensorFlow operation conv2D
