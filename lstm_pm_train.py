@@ -31,13 +31,13 @@ label_dir_val = './labels/001L0.json'       # dir to find the validation labels 
 
 #dataset for training
 print('Training Dataset')
-dataset_train = Feeder(data_dir=data_dir, label_dir=label_dir, train=True, temporal=T, joints=outclass)
-dl_train = DataLoader(dataset_train,batch_size)
+dataset_train = Feeder(data_dir=data_dir, label_dir=label_dir, train=True, temporal=T, joints=outclass,sigma=1)
+dl_train = DataLoader(dataset_train,batch_size,shuffle=False)
 
 #dataset for validation 
 print('Validation Dataset')
-dataset_valid = Feeder(data_dir=data_dir_val, label_dir=label_dir_val, train=False, temporal=T, joints=outclass)
-dl_valid = DataLoader(dataset_valid,5)# make sure that all the images are used as a batch process for validation
+dataset_valid = Feeder(data_dir=data_dir_val, label_dir=label_dir_val, train=False, temporal=T, joints=outclass,sigma=1)
+dl_valid = DataLoader(dataset_valid,batch_size,shuffle=False)# make sure that all the images are used as a batch process for validation
 
 if not os.path.exists(save_dir):
     os.mkdir(save_dir)
@@ -155,7 +155,7 @@ def train():
                 #..............................Validation begins...................................
 
            
-                with tf.device('/cpu:0'):
+                with tf.device('/cpu:0'):     # change to device of preference
                     acc = validate(dl_valid, sess, predict_heatmaps, epoch, save_dir_val)
                 val_update = val_acc.assign(acc)
                 sess.run(val_update)

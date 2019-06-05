@@ -4,7 +4,7 @@ import numpy as np
 
 class DataLoader():
 
-    def __init__(self, feedob, batch_size=1, shuffle = True):
+    def __init__(self, feedob, batch_size, shuffle ):
 
         self.feedob = feedob
         self.shuffle = shuffle
@@ -39,15 +39,15 @@ class DataLoader():
         else:
             return img_batch, cmap_batch
 
-if __name__ == '__main__':
-    temporal = 3
-    data_dir = './data/'
-    label_dir = './labels/001L0.json'
+# if __name__ == '__main__':
+#     temporal = 3
+#     data_dir = './data/'
+#     label_dir = './labels/001L0.json'
 
-    dataset = Feeder(data_dir=data_dir, label_dir=None, temporal=temporal,train=True)
-    dl = DataLoader(dataset,5)
+#     dataset = Feeder(data_dir=data_dir, label_dir=None, temporal=temporal,train=True)
+#     dl = DataLoader(dataset,5)
 
-    # print(dl()[2][0])
-    for i in range(len(dl)//5+1):
-        print(dl.i)
-        j=dl()
+#     # print(dl()[2][0])
+#     for i in range(len(dl)//5+1):
+#         print(dl.i)
+#         j=dl()

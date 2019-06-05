@@ -6,7 +6,7 @@ scaler_model = MinMaxScaler()
 import cv2
 
 # the predict heatmaps come in as a list of tensors the remaining are normal tensors, so converting the predictions also to be tensors completely 
-def calc_loss(predict_heatmaps, label_map, criterion, temporal=21):
+def calc_loss(predict_heatmaps, label_map, criterion, temporal):
     '''
     :param prediction(predict_heatmap(list of size (temporal+1)*[batch_size,46,46,21])), 
     :param label_map the groundtruth labels
@@ -33,7 +33,7 @@ def calc_loss(predict_heatmaps, label_map, criterion, temporal=21):
 
 
 #change to tf operations
-def lstm_pm_evaluation(label_map, predict_heatmaps, sigma=0.04, temporal=5):
+def lstm_pm_evaluation(label_map, predict_heatmaps, sigma, temporal):
     pck_eval = []
     empty = np.zeros((45, 45, 21))                                      # 3D numpy  46 * 46 * 21
     for b in range(label_map.shape[0]):        # for each batch (person)
@@ -41,13 +41,13 @@ def lstm_pm_evaluation(label_map, predict_heatmaps, sigma=0.04, temporal=5):
             target = label_map[b, t, :, :, :]     # 3D numpy  46 * 46 * 21
             predict = predict_heatmaps[t][b, :, :, :]  # 3D numpy  46 * 46 *21
             if not np.equal(empty, target).all():
-                pck_eval.append(PCK(predict, target, sigma=sigma))
+                pck_eval.append(PCK(predict, target,label_size =45, sigma=sigma))
 
     return sum(pck_eval) / float(len(pck_eval))  #
 
 
 #change to tf operations
-def PCK(predict, target, label_size=45, sigma=0.04):
+def PCK(predict, target, label_size, sigma):
     """
     calculate possibility of correct key point of one single image
     if distance of ground truth and predict point is less than sigma, than  the value is 1, otherwise it is 0
@@ -74,7 +74,7 @@ def PCK(predict, target, label_size=45, sigma=0.04):
 #modification of the save image function in the utils
 
 
-def pred_images(heatmaps,step,temporal=5, save_dir='./ckpt_tester2'):
+def pred_images(heatmaps,step,temporal, save_dir):
     """
     :param label_map:
     :param predict_heatmaps:    5D Tensor    Batch_size  *  Temporal *  46 * 46 *21
@@ -88,15 +88,15 @@ def pred_images(heatmaps,step,temporal=5, save_dir='./ckpt_tester2'):
         pre = np.zeros((45, 45))  #
         for i in range(21):                             # for each joint
             pre += heatmaps[t][b, :, :, i]  # 2D
-        _,pre = cv2.threshold(pre,0.5,1,cv2.THRESH_BINARY)
+        #_,pre = cv2.threshold(pre,0.5,1,cv2.THRESH_BINARY)
         output[0:45,  50 * t: 50 * t + 45] = pre
 
         if not os.path.exists(save_dir ):
             os.mkdir(save_dir )
-    # output = scaler_model.fit_transform(output)
+    #output = scaler_model.fit_transform(output)
     scipy.misc.imsave(save_dir + '/' + str(step) + '.jpg', output[0:44])
 
-def pred_images2(heatmaps,label_map,step,temporal=5, save_dir='./ckpt_tester2'):
+def pred_images2(heatmaps,label_map,step,temporal, save_dir):
     """
     :param label_map:
     :param predict_heatmaps:    5D Tensor    Batch_size  *  Temporal *  46 * 46 *21
@@ -105,7 +105,7 @@ def pred_images2(heatmaps,label_map,step,temporal=5, save_dir='./ckpt_tester2'):
     :return:
     """
     b=0
-    thresh = .5
+    # thresh = .5
     output = np.ones((100 , 50 * temporal))           # cd .. temporal save a single image
     for t in range(temporal):                           # for each temporal
         pre = np.zeros((45, 45))  #

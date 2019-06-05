@@ -47,4 +47,5 @@ def pool_center_lower(input):
     with tf.name_scope('avg_pool'):
         #Tensorflow operation for convolution 
         layer = tf.nn.avg_pool(input, ksize=[1, 9, 9, 1], strides=[1, 8, 8, 1], padding='VALID')
+        # layer = tf.layers.AveragePooling2D()
         return layer

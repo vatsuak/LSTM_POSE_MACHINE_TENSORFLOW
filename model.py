@@ -70,7 +70,7 @@ class Net():
             ix = tf.nn.sigmoid(ix)
             ox = tf.nn.sigmoid(ox)
 
-            cell1 = tf.nn.tanh(gx * ix)
+            cell1 = tf.nn.tanh(tf.multiply(gx,ix))
             hide_1 = tf.multiply(ox,cell1)
             return cell1, hide_1
 

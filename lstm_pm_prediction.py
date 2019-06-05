@@ -20,7 +20,8 @@ batch_size = 1
 label_dir = './labels/001L0.json'
 
 # load data
-dataset = Feeder(data_dir=data_dir,label_dir=label_dir, train=False, temporal=T, joints=outclass)
+#dataset = Feeder(data_dir=data_dir,label_dir=label_dir, train=False, temporal=T, joints=outclass)
+dataset = Feeder(data_dir=data_dir,label_dir=None, train=False, temporal=T, joints=outclass,sigma = 1)
 dl = DataLoader(dataset,batch_size,shuffle=False)
 print('Dataset Loaded')
 
@@ -73,7 +74,7 @@ with tf.Session() as sess:
     for step in range(len(dl)//batch_size):
 
     # get the inputs for the placeholders
-        images, label, center = dl()
+        images, center = dl()
         # label = cv2.blur(label,(1,1,5,5,1))
     # images = np.full((1,368,368,T*3), 1.0)
     # center = np.full((1,368,368,1), 1.0)
@@ -89,6 +90,8 @@ with tf.Session() as sess:
         #ignoring the initial heatmap(used as a prior)
         prediction =  prediction[1:]
         
-        pred_images2(prediction, label,step, temporal=T, save_dir=save_dir)
+        #pred_images2(prediction, label,step, temporal=T, save_dir=save_dir)
+        pred_images(prediction, step,temporal=T, save_dir=save_dir)
+
 
 

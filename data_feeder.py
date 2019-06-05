@@ -10,7 +10,7 @@ import scipy.misc
 
 class Feeder():
 
-    def __init__(self, data_dir, label_dir=None, train=True, temporal=5, joints=21, sigma=1):
+    def __init__(self, data_dir, label_dir, train, temporal, joints, sigma):
         self.height = 368
         self.width = 368
 
@@ -176,6 +176,7 @@ class Feeder():
 
 
 # test case
+'''
 
 if __name__ == '__main__':
     temporal = 5
@@ -205,3 +206,4 @@ if __name__ == '__main__':
     # print(images.shape)  # (5*3) * 368 * 368)
     # print(label_maps.shape)  # 5 21 45 45
     # print(a[0].shape)
+    '''
