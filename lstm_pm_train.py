@@ -5,7 +5,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 from time import gmtime, strftime
 import tensorflow as tf
-import model
+import new_model
 import numpy as np
 import pandas as pd
 from DataLoader import *
@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 
 # hyper parameter
-T = 3
+T = 5
 outclass = 21
 learning_rate = 8e-6
 batch_size = 4                   # batch size* temporal must be atleast total number of images in the dataset otherwise the batches will be reported as the same images in a cyclic manner
@@ -25,7 +25,7 @@ data_dir = './001L0/'                        # the train data dir
 label_dir = './labels/001L0.json'           # the label dir
 
 save_dir_val= './validation_info/'          # dir to save the validation info i.e.the csv
-data_dir_val = './001L0/'                # dir to find the validation dataset
+data_dir_val = './001L00/'                # dir to find the validation dataset
 label_dir_val = './labels/001L0.json'       # dir to find the validation labels should point to a json file
 
 
@@ -49,10 +49,10 @@ if not os.path.exists(save_dir_val):
                             #***********************Placeholders*********************
     
 #placeholder for the input image
-image = tf.placeholder(tf.float32,shape=[None,368,368,T*3],name='temporal_info')
+image = tf.placeholder(tf.float32,shape=[None,368,368,T*3],name='temporal_images')
 
 # the output prediction should come out as 45*45*21
-label_map = tf.placeholder(tf.float32,shape=[None,T,45,45,outclass])
+label_map = tf.placeholder(tf.float32,shape=[None,T,45,45,outclass], name='labels')
 
 # placeholder for the gaussian
 cmap = tf.placeholder(tf.float32,shape=[None,368,368,1],name='gaussian_peak')
@@ -61,7 +61,7 @@ cmap = tf.placeholder(tf.float32,shape=[None,368,368,1],name='gaussian_peak')
 # dropprob = tf.placeholder(tf.float32,name='dropout')
 
 # Build model
-net = model.Net(outclass=outclass,T=T)
+net = new_model.Net(outclass=outclass,T=T)
 
 
                             #****************BUILDING THE GRAPH*********************
@@ -74,9 +74,34 @@ predict_heatmaps = net.forward(image, cmap)  # lis of size (temporal + 1 ) * 4D 
 optim = tf.train.AdamOptimizer(learning_rate=learning_rate, beta1=0.9, beta2=0.999)
 
 #loss calculation 
-criterion = tf.losses.mean_squared_error  # loss function MSE  
+# criterion = tf.losses.mean_squared_error  # loss function MSE  
 
-total_loss = calc_loss(predict_heatmaps, label_map, criterion, temporal=T)
+def calc_loss(predict_heatmap, label_maps, temporal):
+    '''
+    :param prediction(predict_heatmap(list of size (temporal+1)*[batch_size,46,46,21])), 
+    :param label_map the groundtruth labels
+    return:
+    total_loss
+    '''
+    # print(predict_heatmaps.get_shape())
+
+    predict = predict_heatmap[0]  # the initial prediction 
+
+    # print(label_map.get_shape())
+
+    target = label_maps[:, 0, :, :, :]
+    initial_loss = tf.reduce_mean(tf.squared_difference(predict, target))  # loss initial
+    total_loss = initial_loss
+
+    for t in range(temporal):
+        predict = predict_heatmap[t+1]
+        target = label_maps[:, t, :, :, :]
+        tmp_loss = tf.reduce_mean(tf.squared_difference(predict, target))  # loss in each stage
+        total_loss += tmp_loss
+    return total_loss
+
+
+total_loss = calc_loss(predict_heatmaps, label_map, temporal=T)
 # adding the summary for the total loss
 
 tf.summary.scalar("Loss",total_loss)
@@ -130,7 +155,7 @@ def train():
             # currently: Batch_size  *  1  * width(368) * height(368)
             '''
             print('==Training')
-            for step in range(len(dl_train)//batch_size):
+            for step in range(len(dl_train)//batch_size+1):
 
                 # get the inputs for the placeholders
                 images, label, center = dl_train()
@@ -148,9 +173,11 @@ def train():
                 # print('--loss ' + str(float(sess.run(total_loss,feed_dict={image:im,label_map:lbl,cmap:cm}))))
 
                 #  ************************* validate and save model per 10 epochs  *************************
-            if (epoch+1) % 10 == 0:
+            if (epoch) % 10 == 0:
                 saver.save(sess, os.path.join(save_dir, 'lstm_pm_epoch{:d}.ckpt'.format(epoch)))
-
+                prediction = sess.run(predict_heatmaps,feed_dict={image:images,cmap:center})
+                prediction =  prediction[1:]
+                output(prediction,T)
 
                 #..............................Validation begins...................................
 
@@ -159,8 +186,10 @@ def train():
                     acc = validate(dl_valid, sess, predict_heatmaps, epoch, save_dir_val)
                 val_update = val_acc.assign(acc)
                 sess.run(val_update)
+		
             
             # summary = sess.run(merge)
+            
             writer_train.add_summary(summary, epoch)
 
             
@@ -220,7 +249,7 @@ def validate(dlobj, sess, predict_heatmaps, epoch, save_dir_val):
         # result.append(str(sum(pck_all) / len(pck_all)))
         # results.append(result)
 
-    print('--PCK evaluation in validation dataset is ' + str(pck_tot/len(sigmas)))
+    print('--PCK evaluation in validation dataset is ' + str(pck_tot))
     # print(results)
     results = pd.DataFrame(results)
     results.to_csv(save_dir_val + str('test_pck_epoch_{}.csv'.format(epoch)), header=['Sigma','Avg. Pck'], index=None,sep='\t')

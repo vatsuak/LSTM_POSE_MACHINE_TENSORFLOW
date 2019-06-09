@@ -76,7 +76,7 @@ class Net():
 
     def lstm(self, heatmap, features, centermap, hide_t_1, cell_t_1):
         ''' denoted by L(.) at t>1 in the paper
-            :param heatmap:     output(21)* 45 * 45 
+            :param heatmap:     45 * 45 * output(21)
             :param features:    45 * 45 * 32
             :param centermap:   45 * 45 * 1
             :param hide_t_1     45 * 45 * 48

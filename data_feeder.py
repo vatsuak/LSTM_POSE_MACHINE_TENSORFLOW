@@ -6,6 +6,7 @@ import json
 import cv2
 from tqdm import tqdm
 import scipy.misc
+from PIL import Image
 
 
 class Feeder():
@@ -30,14 +31,27 @@ class Feeder():
         else:
             self.gen_temporal_dir(temporal)
 
-    def normalize(self,im):
+    def normalize(self, pic):
         """
         convert each image to float32 and normalize them
         :param im: 368*368*3 uint8-type      range: 0-255
         :return:   368*368*3 float32-type    range: 0-1 
         """
-        im = im.astype(np.float32)  #convert the image to a float32 from uint8
-        return im/255.0
+        if pic.mode == 'I':
+            img = np.array(pic, np.int32, copy=False)
+        elif pic.mode == 'I;16':
+            img = np.array(pic, np.int16, copy=False)
+        else:
+            img = np.array(pic)
+        # PIL image mode: 1, L, P, I, F, RGB, YCbCr, RGBA, CMYK
+        if pic.mode == 'YCbCr':
+            nchannel = 3
+        elif pic.mode == 'I;16':
+            nchannel = 1
+        else:
+            nchannel = len(pic.mode)
+        img = img.reshape(pic.size[0], pic.size[1], nchannel)
+        return img.astype(np.float32)/255.0
 
 
 
@@ -100,12 +114,12 @@ class Feeder():
             img = imgs[i]                       # 'datadir/L0005.jpg'
 
             # get image
-            im = cv2.imread(img)                # read image of openCV 
-            w, h, _ = im.shape      # weight 256 * height 256 * _
+            im = Image.open(img)              # read image of openCV 
+            w, h, _ = np.asarray(im).shape     # weight 256 * height 256 * _
             ratio_x = self.width / float(w)
             ratio_y = self.height / float(h)    # 368 / 256 = 1.4375
 
-            im = cv2.resize(im,(int(self.width), int(self.height)))       # unit8      weight 368 * height 368 * 3
+            im = im.resize((self.width, self.height))       # unit8      widht 368 * height 368 * 3
             images[:, :, (i * 3):(i * 3 + 3)] = self.normalize(im)   # float type 3D Vector  normalized height 368 * weight 368 * 3
 
             # get label map
@@ -128,9 +142,9 @@ class Feeder():
         center_map = np.expand_dims(center_map,2)    #numpy of size 368*368*1
 
         if self.label_dir:
-            return images, label_maps, center_map
+            return images.astype(np.float32), label_maps.astype(np.float32), center_map.astype(np.float32)
         else:
-            return images, center_map
+            return images.astype(np.float32), center_map.astype(np.float32)
 
         
 
