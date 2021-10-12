@@ -16,5 +16,5 @@ scipy==1.2.1
 tqdm
 
 tensorflow-gpu==1.15.4
-opencv-python==3.4.2.17
+opencv-python==3.4.7.28
 
